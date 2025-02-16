@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 文件导入</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        input[type="file"] {
+            display: block;
+            margin: 20px auto;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 16px;
+            color: green;
+        }
+        .error-message {
+            margin-top: 20px;
+            font-size: 16px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Excel 文件导入</h1>
+    <input type="file" id="fileInput" accept=".xlsx, .xls" />
+    <button onclick="uploadFile()">上传文件</button>
+    <div id="message" class="message"></div>
+    <div id="errorMessage" class="error-message"></div>
+</div>
+
+<script>
+    async function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            document.getElementById('errorMessage').innerText = '请选择一个文件';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('multipartFile', file);
+
+        try {
+            const response = await fetch('http://localhost:8201/api/excel/read', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                // 检查响应的内容类型
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+                    // 如果是 Excel 文件，触发下载
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'errorData.xlsx'; // 设置下载文件名
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                    document.getElementById('message').innerText = '文件上传成功！';
+                    document.getElementById('errorMessage').innerText = '';
+                } else {
+                    // 否则尝试解析为 JSON
+                    const result = await response.json();
+                    document.getElementById('message').innerText = '文件上传成功！';
+                    document.getElementById('errorMessage').innerText = '';
+                }
+            } else {
+                const error = await response.json();
+                document.getElementById('errorMessage').innerText = `文件上传失败: ${error.message}`;
+                document.getElementById('message').innerText = '';
+            }
+        } catch (error) {
+            document.getElementById('errorMessage').innerText = `文件上传失败: ${error.message}`;
+            document.getElementById('message').innerText = '';
+        }
+    }
+</script>
+</body>
+</html>

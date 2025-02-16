@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yupi.springbootinit.mapper.AdditionalInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.zichang.zcmanage.model.domain.AdditionalInfo">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="device_code" column="device_code" jdbcType="VARCHAR"/>
+            <result property="device_purpose" column="device_purpose" jdbcType="VARCHAR"/>
+            <result property="asset_source" column="asset_source" jdbcType="VARCHAR"/>
+            <result property="country_code" column="country_code" jdbcType="VARCHAR"/>
+            <result property="country_name" column="country_name" jdbcType="VARCHAR"/>
+            <result property="purchase_type" column="purchase_type" jdbcType="VARCHAR"/>
+            <result property="photo" column="photo" jdbcType="VARCHAR"/>
+            <result property="predevice_code" column="predevice_code" jdbcType="VARCHAR"/>
+            <result property="brand" column="brand" jdbcType="VARCHAR"/>
+            <result property="specification" column="specification" jdbcType="VARCHAR"/>
+            <result property="model" column="model" jdbcType="VARCHAR"/>
+            <result property="category_code" column="category_code" jdbcType="VARCHAR"/>
+            <result property="category_description" column="category_description" jdbcType="VARCHAR"/>
+            <result property="warehouse_type" column="warehouse_type" jdbcType="VARCHAR"/>
+            <result property="serial_number" column="serial_number" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="VARCHAR"/>
+            <result property="submit" column="submit" jdbcType="VARCHAR"/>
+            <result property="isTag" column="isTag" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,device_code,device_purpose,
+        asset_source,country_code,country_name,
+        purchase_type,photo,predevice_code,
+        brand,specification,model,
+        category_code,category_description,warehouse_type,
+        serial_number,status,submit,
+        isTag,createTime,updateTime,
+        isDelete
+    </sql>
+</mapper>

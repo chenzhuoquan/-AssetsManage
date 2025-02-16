@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yupi.springbootinit.mapper.FinancialInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.zichang.zcmanage.model.domain.FinancialInfo">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="device_code" column="device_code" jdbcType="VARCHAR"/>
+            <result property="device_unit" column="device_unit" jdbcType="VARCHAR"/>
+            <result property="unit_price" column="unit_price" jdbcType="DECIMAL"/>
+            <result property="device_num" column="device_num" jdbcType="INTEGER"/>
+            <result property="total_price" column="total_price" jdbcType="DECIMAL"/>
+            <result property="attachment_quantity" column="attachment_quantity" jdbcType="INTEGER"/>
+            <result property="attachment_total_price" column="attachment_total_price" jdbcType="DECIMAL"/>
+            <result property="maintenance_times" column="maintenance_times" jdbcType="INTEGER"/>
+            <result property="maintenance_cost" column="maintenance_cost" jdbcType="DECIMAL"/>
+            <result property="supplier_code" column="supplier_code" jdbcType="VARCHAR"/>
+            <result property="purchase_date" column="purchase_date" jdbcType="VARCHAR"/>
+            <result property="acceptance_date" column="acceptance_date" jdbcType="VARCHAR"/>
+            <result property="user_id" column="user_id" jdbcType="VARCHAR"/>
+            <result property="user_name" column="user_name" jdbcType="VARCHAR"/>
+            <result property="unit_name" column="unit_name" jdbcType="VARCHAR"/>
+            <result property="department_name" column="department_name" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,device_code,device_unit,
+        unit_price,device_num,total_price,
+        attachment_quantity,attachment_total_price,maintenance_times,
+        maintenance_cost,supplier_code,purchase_date,
+        acceptance_date,user_id,user_name,
+        unit_name,department_name,createTime,
+        updateTime,isDelete
+    </sql>
+</mapper>

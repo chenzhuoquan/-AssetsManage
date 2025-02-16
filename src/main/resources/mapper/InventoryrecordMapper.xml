@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yupi.springbootinit.mapper.InventoryrecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.zichang.zcmanage.model.domain.Inventoryrecord">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="assetCode" column="assetCode" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="errorMessage" column="errorMessage" jdbcType="VARCHAR"/>
+            <result property="operName" column="operName" jdbcType="VARCHAR"/>
+            <result property="location" column="location" jdbcType="VARCHAR"/>
+            <result property="checkTime" column="checkTime" jdbcType="TIMESTAMP"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,assetCode,status,
+        errorMessage,oper_name,location,
+        checkTime,createTime,isDelete,
+        title,content
+    </sql>
+</mapper>

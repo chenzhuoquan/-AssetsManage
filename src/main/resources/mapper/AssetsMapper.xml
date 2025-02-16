@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yupi.springbootinit.mapper.AssetsMapper">
+
+    <resultMap id="BaseResultMap" type="com.zichang.zcmanage.model.domain.Assets">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="device_code" column="device_code" jdbcType="VARCHAR"/>
+            <result property="device_name" column="device_name" jdbcType="VARCHAR"/>
+            <result property="building_code" column="building_code" jdbcType="VARCHAR"/>
+            <result property="building_name" column="building_name" jdbcType="VARCHAR"/>
+            <result property="floor" column="floor" jdbcType="VARCHAR"/>
+            <result property="room_number" column="room_number" jdbcType="VARCHAR"/>
+            <result property="location_remarks" column="location_remarks" jdbcType="VARCHAR"/>
+            <result property="inventory_remarks" column="inventory_remarks" jdbcType="VARCHAR"/>
+            <result property="clearance_status" column="clearance_status" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,device_code,device_name,
+        building_code,building_name,floor,
+        room_number,location_remarks,inventory_remarks,
+        clearance_status,createTime,updateTime,
+        isDelete
+    </sql>
+
+    <select id="selectExcelData" resultType="com.zichang.zcmanage.model.data.ExcelData">
+        SELECT a.device_code,
+               ai.predevice_code,
+               a.device_name,
+               ai.brand,
+               ai.specification,
+               ai.model,
+               ai.category_code,
+               ai.category_description,
+               ai.warehouse_type,
+               ai.serial_number,
+               fi.supplier_code,
+               ai.status,
+               a.location_remarks,
+               a.inventory_remarks,
+               ai.submit,
+               ai.isTag,
+               fi.purchase_date,
+               fi.acceptance_date,
+               fi.user_id,
+               fi.user_name,
+               fi.department_name,
+               a.building_code,
+               a.building_name,
+               a.floor,
+               a.room_number,
+               fi.unit_name,
+               fi.device_unit,
+               fi.unit_price,
+               fi.device_num,
+               fi.total_price,
+               fi.attachment_quantity,
+               fi.attachment_total_price,
+               fi.maintenance_times,
+               fi.maintenance_cost,
+               ai.device_purpose,
+               ai.purchase_type,
+               ai.asset_source,
+               ai.country_code,
+               ai.country_name,
+               ai.photo,
+               a.clearance_status
+        FROM assets a
+                 LEFT JOIN additional_info ai ON a.device_code = ai.device_code
+                 LEFT JOIN financial_info fi ON a.device_code = fi.device_code
+        WHERE a.isDelete = 0
+          AND ai.isDelete = 0
+          AND fi.isDelete = 0
+        order by a.device_code desc
+    </select>
+</mapper>
