@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yupi.springbootinit.mapper.AssetsMapper">
+<mapper namespace="com.zichang.zcmanage.mapper.AssetsMapper">
 
     <resultMap id="BaseResultMap" type="com.zichang.zcmanage.model.domain.Assets">
             <id property="id" column="id" jdbcType="BIGINT"/>
@@ -76,6 +76,7 @@
         WHERE a.isDelete = 0
           AND ai.isDelete = 0
           AND fi.isDelete = 0
+
         order by a.device_code desc
     </select>
 </mapper>
