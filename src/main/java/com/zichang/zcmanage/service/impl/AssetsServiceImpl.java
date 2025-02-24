@@ -116,23 +116,15 @@ public class AssetsServiceImpl extends ServiceImpl<AssetsMapper, Assets>
                 .eq(Assets::getDevice_code, deviceCodeId);
         //从Assets表查询
         Assets assets = this.getOne(queryWrapper);
-        if(assets==null|| StringUtils.isBlank(assets.getDevice_name())){
+        if(assets==null||StringUtils.isBlank(assets.getDevice_name())){
             return null;
         }
-
         //封装VO类
         AssetsDataVO assetsDataVO = new AssetsDataVO();
         BeanUtil.copyProperties(assets,assetsDataVO);
-
         return assetsDataVO;
-
     }
 
-    /**
-     * 分页获取资产信息(管理员)
-     * @param assetsQueryRequest
-     * @return
-     */
     @Override
     public Page<AssetsDataVO> getAssetsDataVO(AssetsQueryRequest assetsQueryRequest) {
 

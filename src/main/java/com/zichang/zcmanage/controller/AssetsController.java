@@ -15,6 +15,7 @@ import com.zichang.zcmanage.common.ResultUtils;
 import com.zichang.zcmanage.constant.InventoryConstant;
 import com.zichang.zcmanage.constant.UserConstant;
 import com.zichang.zcmanage.exception.BusinessException;
+import com.zichang.zcmanage.exception.ThrowUtils;
 import com.zichang.zcmanage.model.domain.Assets;
 import com.zichang.zcmanage.model.domain.AssetsRecords;
 import com.zichang.zcmanage.model.domain.User;
@@ -22,6 +23,7 @@ import com.zichang.zcmanage.model.request.*;
 import com.zichang.zcmanage.model.vo.AssetsAllRecordsVO;
 import com.zichang.zcmanage.model.vo.AssetsDataVO;
 import com.zichang.zcmanage.model.vo.AssetsRecordsVO;
+import com.zichang.zcmanage.model.vo.LocationInfo;
 import com.zichang.zcmanage.service.AssetsRecordsService;
 import com.zichang.zcmanage.service.AssetsService;
 import com.zichang.zcmanage.service.UserService;
@@ -90,6 +92,7 @@ public class AssetsController {
      */
     @GetMapping("/get/vo")
     public BaseResponse<AssetsDataVO> getAssetsVOById(long deviceCodeId, HttpServletRequest request) {
+        ThrowUtils.throwIf(deviceCodeId <= 0, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
@@ -109,9 +112,7 @@ public class AssetsController {
     @GetMapping("/getRecord/vo")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<AssetsRecordsVO> getAssetsRecordsVOById(long assetsRecordId) {
-        if (assetsRecordId <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
+        ThrowUtils.throwIf(assetsRecordId <= 0, ErrorCode.PARAMS_ERROR);
         AssetsRecords records = assetsRecordsService.getById(assetsRecordId);
         String deviceCode = records.getDevice_code();
         String[] split = deviceCode.split(",");
@@ -121,43 +122,6 @@ public class AssetsController {
         assetsRecordsVO.setDevice_code(codeList);
         return ResultUtils.success(assetsRecordsVO);
     }
-
-
-   /* @PostMapping("/edit")
-    public BaseResponse<Boolean> editAssetsRecord(@RequestBody AssetsRecordUpdateRequest assetsRecordUpdateRequest, HttpServletRequest request) {
-        User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        if (assetsRecordUpdateRequest == null || assetsRecordUpdateRequest.getId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-
-        Long id = assetsRecordUpdateRequest.getId();
-        LambdaQueryWrapper<AssetsRecords> queryWrapper = Wrappers.lambdaQuery(AssetsRecords.class)
-                .select(AssetsRecords::getEdit_status)
-                .eq(AssetsRecords::getId, id);
-        AssetsRecords one = assetsRecordsService.getOne(queryWrapper);
-        ThrowUtils.throwIf(one == null, ErrorCode.NOT_FOUND_ERROR, "编辑数据不存在");
-        if (one.getEdit_status() == 1) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "该资产条目已审核，无法编辑");
-        }
-        //仅本人可编辑
-        if(!one.getUserId().equals(loginUser.getId())) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR);
-        }
-
-        AssetsRecords assetsRecords = new AssetsRecords();
-        List<String> deviceCode = assetsRecordUpdateRequest.getDevice_code();
-        // 使用String.join方法连接设备编码列表
-        String deviceCodeStr = String.join(",", deviceCode);
-        BeanUtil.copyProperties(assetsRecordUpdateRequest, assetsRecords, "id");
-        assetsRecords.setId(id);
-        assetsRecords.setDevice_code(deviceCodeStr);
-        assetsRecords.setEditTime(new Date());
-        boolean result = assetsRecordsService.updateById(assetsRecords);
-        return ResultUtils.success(result);
-    }*/
 
 
     /**
@@ -179,7 +143,6 @@ public class AssetsController {
     /**
      * 审核登记信息(管理员)
      * 审核通过的信息不能再审核（通过/拒绝）
-     *
      * @param assetsAuditRequest
      * @return
      */
@@ -195,7 +158,6 @@ public class AssetsController {
 
     /**
      * 批量审核登记信息(管理员)
-     *
      * @param assetsBatchAuditRequest
      * @return
      */
@@ -211,7 +173,6 @@ public class AssetsController {
 
     /**
      * 分页获取资产信息(管理员)
-     *
      * @param assetsQueryRequest
      * @return
      */
@@ -227,7 +188,6 @@ public class AssetsController {
 
     /**
      * 更改资产信息(管理员)
-     *
      * @param assetsUpdateRequest
      * @return
      */
@@ -238,12 +198,14 @@ public class AssetsController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         Long id = assetsUpdateRequest.getId();
-        Assets one = assetsService.getById(id);
-        if (one == null) {
+        Assets oldAssets = assetsService.getById(id);
+        if (oldAssets == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "该资产条目不存在");
         }
+        LocationInfo locationInfo = assetsRecordsService.fillLocation(assetsUpdateRequest.getRoom_number());
         Assets assets = new Assets();
         BeanUtil.copyProperties(assetsUpdateRequest, assets);
+        BeanUtil.copyProperties(locationInfo, assets);
         boolean result = assetsService.updateById(assets);
         return ResultUtils.success(result);
     }

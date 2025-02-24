@@ -22,9 +22,19 @@ public interface AssetsService extends IService<Assets> {
     void saveBatchToAssets(List<Assets> cacheAssetsList);
 
 
+    /**
+     * 根据设备编号获取设备信息
+     * @param deviceCodeId
+     * @return
+     */
     AssetsDataVO getAssetsDataByCodeId(long deviceCodeId);
 
 
+    /**
+     * 分页获取资产信息(管理员)
+     * @param assetsQueryRequest
+     * @return
+     */
     Page<AssetsDataVO> getAssetsDataVO(AssetsQueryRequest assetsQueryRequest);
 
     QueryWrapper<Assets> getQueryWrapper(AssetsQueryRequest assetsQueryRequest);

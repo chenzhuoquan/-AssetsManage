@@ -21,6 +21,7 @@ import com.zichang.zcmanage.model.enums.AssetsReviewStatusEnum;
 import com.zichang.zcmanage.model.request.*;
 import com.zichang.zcmanage.model.vo.AssetsAllRecordsVO;
 import com.zichang.zcmanage.model.vo.AssetsRecordsVO;
+import com.zichang.zcmanage.model.vo.LocationInfo;
 import com.zichang.zcmanage.model.vo.SafeUserVO;
 import com.zichang.zcmanage.service.AssetsRecordsService;
 import com.zichang.zcmanage.service.AssetsService;
@@ -57,37 +58,30 @@ public class AssetsRecordsServiceImpl extends ServiceImpl<AssetsRecordsMapper, A
     @Resource
     private AssetsService assetsService;
 
+    // 正则表达式编译为静态常量
+    private static final Pattern ROOM_NUMBER_PATTERN = Pattern.compile("^([A-Za-z]+\\d+)-(\\d{1,2})\\d{2}$");
+
 
     @Override
     public boolean addAssets(AddAssetsRequest addAssetsRequest, User loginUser) {
+
+        //参数校验
         if (addAssetsRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         List<String> deviceCode = addAssetsRequest.getDevice_code();
         String locationRemarks = addAssetsRequest.getLocation_remarks();
         String roomNumber = addAssetsRequest.getRoom_number();
-        if (CollUtil.isEmpty(deviceCode)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "设备编码为空");
-        }
-        ThrowUtils.throwIf(StrUtil.isBlank(roomNumber),ErrorCode.PARAMS_ERROR,"房间号不能为空");
-        String buildingCode=null;
-        String buildingName=null;
-        String floor=null;
+        ThrowUtils.throwIf(CollUtil.isEmpty(deviceCode), ErrorCode.PARAMS_ERROR, "设备编码为空");
+        ThrowUtils.throwIf(StrUtil.isBlank(roomNumber), ErrorCode.PARAMS_ERROR, "房间号不能为空");
+
         // 定义正则表达式，匹配建筑物编码和房间号
-        if(roomNumber!=null){
-            Pattern pattern = Pattern.compile("^([A-Za-z]+\\d+)-(\\d{1,2})\\d{2}$");
-            Matcher matcher = pattern.matcher(roomNumber);
-            if (matcher.find()) {
-                // 提取建筑物编码
-                buildingCode = matcher.group(1);
-                buildingName = matcher.group(1);
-                // 提取楼层，确保楼层为两位数
-                floor = String.format("%02d", Integer.parseInt(matcher.group(2)));
-            } else {
-                // 如果匹配失败，可以抛出异常或返回错误信息
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "房间号格式错误");
-            }
-        }
+        LocationInfo locationInfo = this.fillLocation(roomNumber);
+        String building_code = locationInfo.getBuilding_code();
+        String building_Name = locationInfo.getBuilding_name();
+        String floor = locationInfo.getFloor();
+
+
         //如果是更新,则判断登记记录是否存在
         Long id = addAssetsRequest.getId();
         if (id != null) {
@@ -109,14 +103,33 @@ public class AssetsRecordsServiceImpl extends ServiceImpl<AssetsRecordsMapper, A
         assetsRecords.setLocation_remarks(locationRemarks);
         assetsRecords.setFloor(floor);
         assetsRecords.setRoom_number(roomNumber);
-        assetsRecords.setBuilding_code(buildingCode);
-        assetsRecords.setBuilding_name(buildingName);
+        assetsRecords.setBuilding_code(building_code);
+        assetsRecords.setBuilding_name(building_Name);
         assetsRecords.setUserId(loginUser.getId());
         if (id != null) {
             assetsRecords.setId(id);
             assetsRecords.setEditTime(new Date());
         }
-       return this.saveOrUpdate(assetsRecords);
+        return this.saveOrUpdate(assetsRecords);
+    }
+
+    public LocationInfo fillLocation(String roomNumber) {
+        if (StrUtil.isBlank(roomNumber)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "房间号不能为空");
+        }
+        // 定义正则表达式，匹配建筑物编码和房间号
+        Matcher matcher = ROOM_NUMBER_PATTERN.matcher(roomNumber);
+        if (matcher.find()) {
+            // 提取建筑物编码
+            String buildingCode = matcher.group(1);
+            String buildingName = matcher.group(1);
+            // 提取楼层，确保楼层为两位数
+            String floor = String.format("%02d", Integer.parseInt(matcher.group(2)));
+            return new LocationInfo(buildingCode, buildingName, floor);
+        } else {
+            // 如果匹配失败，可以抛出异常或返回错误信息
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "房间号格式输入错误");
+        }
     }
 
 /*    @Override
@@ -215,12 +228,7 @@ public class AssetsRecordsServiceImpl extends ServiceImpl<AssetsRecordsMapper, A
 
     }*/
 
-    /**
-     * 获取所有登记记录列表以及登记用户信息
-     *
-     * @param assetsQueryRequest
-     * @return
-     */
+
     @Override
     public Page<AssetsAllRecordsVO> getAllAssesRecords(AssetsRecordQueryRequest assetsQueryRequest) {
         if (assetsQueryRequest == null) {
@@ -290,7 +298,6 @@ public class AssetsRecordsServiceImpl extends ServiceImpl<AssetsRecordsMapper, A
         return assetsRecordsVOPage;
     }
 
-    // todo 加锁切面
     @Override
     public void auditAssetsRecord(AssetsAuditRequest assetsAuditRequest) {
         //1.参数校验
@@ -316,8 +323,8 @@ public class AssetsRecordsServiceImpl extends ServiceImpl<AssetsRecordsMapper, A
             AssetsRecords assetsRecords = new AssetsRecords();
             BeanUtil.copyProperties(assetsAuditRequest, assetsRecords);
             assetsRecords.setAuditTime(new Date());
-            boolean result2 = this.updateById(assetsRecords);
-            ThrowUtils.throwIf(!result2, ErrorCode.OPERATION_ERROR, "审核失败");
+            boolean result = this.updateById(assetsRecords);
+            ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "审核失败");
         } else {
             //更新审核状态以及同步资产原始信息
             AssetsRecordUpdateRequest assetsRecordUpdateRequest = new AssetsRecordUpdateRequest();
@@ -427,27 +434,18 @@ public class AssetsRecordsServiceImpl extends ServiceImpl<AssetsRecordsMapper, A
             if (CollUtil.isEmpty(assetsList)) {
                 return;
             }
-        /*    if (deviceCode.size() != assetsList.size()) {
-                List<String> collect = assetsList.stream().map(Assets::getDevice_code).collect(Collectors.toList());
-                collect.forEach(code -> {
-                    if (deviceCode.contains(code)) {
-                        deviceCode.remove(code);
-                    }
-                });
-                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "设备编码:" + deviceCode + "不存在数据库中");
-            }*/
 
+            List<Assets> needUpdateAssets = new ArrayList<>();
             assetsList.forEach(assets -> {
-                Assets assets1 = new Assets();
-                BeanUtils.copyProperties(assetsRecordUpdateRequest, assets1, "id", "device_code");
-                assets1.setId(assets.getId());
-                // assets1.setDevice_code(assets.getDevice_code());
-                boolean result = assetsService.updateById(assets1);
-                if (!result) {
-                    throw new BusinessException(ErrorCode.OPERATION_ERROR, "审核失败");
-                }
-
+                Assets newAssets = new Assets();
+                BeanUtils.copyProperties(assetsRecordUpdateRequest, newAssets, "id", "device_code");
+                newAssets.setId(assets.getId());
+                needUpdateAssets.add(newAssets);
             });
+            boolean result1 = assetsService.updateBatchById(needUpdateAssets);
+            if (!result1) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "审核失败");
+            }
 
             AssetsRecords assetsRecords = new AssetsRecords();
             assetsRecords.setId(assetsRecordUpdateRequest.getId());
@@ -456,7 +454,7 @@ public class AssetsRecordsServiceImpl extends ServiceImpl<AssetsRecordsMapper, A
             assetsRecords.setAuditTime(new Date());
             boolean result2 = this.updateById(assetsRecords);
             if (!result2) {
-                throw new BusinessException(ErrorCode.OPERATION_ERROR, "数据库操作错误");
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "审核失败");
             }
 
         } catch (DataAccessException e) {
@@ -486,7 +484,6 @@ public class AssetsRecordsServiceImpl extends ServiceImpl<AssetsRecordsMapper, A
 
 
         QueryWrapper<AssetsRecords> queryWrapper = new QueryWrapper<>();
-
         queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjUtil.isNotEmpty(userId), "userId", userId);
         queryWrapper.eq(ObjUtil.isNotEmpty(edit_status), "edit_status", edit_status);

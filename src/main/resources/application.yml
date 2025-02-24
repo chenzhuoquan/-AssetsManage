@@ -1,7 +1,7 @@
 # 公共配置文件
 spring:
   application:
-    name: springboot-init
+    name: zichang-manage-backend
   # 默认 dev 环境
   profiles:
     active: dev
@@ -20,8 +20,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/my_zc2?rewriteBatchedStatements=true
-    username: ///
-    password: ///
+    username: root
+    password: 665432100
   # 文件上传
   servlet:
     multipart:

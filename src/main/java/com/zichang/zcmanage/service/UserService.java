@@ -27,6 +27,11 @@ public interface UserService extends IService<User> {
 
     User getLoginUser(HttpServletRequest request);
 
+    /**
+     * 获取用户ID到用户信息的映射
+     * @param userIdList
+     * @return
+     */
     List<SafeUserVO> getUserListByIds(List<Long> userIdList);
 
     Page<UserListVO> getSafeUserList(UserQueryRequest userQueryRequest);
