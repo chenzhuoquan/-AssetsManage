@@ -19,10 +19,7 @@ class MainApplicationTests {
 
     @Test
     void selectAllData() {
-        List<ExcelData> excelDataList = assetsMapper.selectExcelData();
-        for (ExcelData excelData : excelDataList) {
-            System.out.println(excelData);
-        }
+
     }
 
 }

@@ -13,7 +13,7 @@ import java.util.List;
 * @Entity generator.domain.Assets
 */
 public interface AssetsMapper extends BaseMapper<Assets> {
-    List<ExcelData> selectExcelData();
+    List<ExcelData> selectExcelData(int offSet,int pageSize);
 }
 
 

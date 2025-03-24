@@ -43,16 +43,11 @@ import java.util.concurrent.TimeUnit;
 public class AssetsServiceImpl extends ServiceImpl<AssetsMapper, Assets>
     implements AssetsService{
 
-    @Override
+   /* @Override
     public void saveBatchToAssets(List<Assets> cacheAssetsList) {
-
-
-
         // 创建并启动秒表，用于计时
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-
-
         //自定义线程池
         ThreadPoolExecutor customExecutor = new ThreadPoolExecutor(
                 12,             //核心线程数
@@ -62,18 +57,10 @@ public class AssetsServiceImpl extends ServiceImpl<AssetsMapper, Assets>
                 new LinkedBlockingQueue<>(10000),   //阻塞队列容量
                 new ThreadPoolExecutor.CallerRunsPolicy()   //拒绝策略，由调用线程处理任务
         );
-
         int batchSize = 800;
-
         int assetListSize=cacheAssetsList.size();
-
-
-
         // 存储所有异步任务的列表
         List<CompletableFuture<Void>> futureList = new ArrayList<>();
-
-
-
         // 循环创建用户并分批插入
         for (int i = 0; i < assetListSize; i+=batchSize) {
             List<Assets> assets = cacheAssetsList.subList(i, Math.min(i + batchSize, assetListSize));
@@ -82,32 +69,25 @@ public class AssetsServiceImpl extends ServiceImpl<AssetsMapper, Assets>
             AssetsServiceImpl assetsService = (AssetsServiceImpl) AopContext.currentProxy();
             // 异步执行插入操作
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-
                 try {
-
                     // 调用服务层方法批量插入用户
                     assetsService.saveBatch(assets);
                 } catch (Exception e) {
                     log.error("333批量导入失败", e);
-
                     throw new RuntimeException("333批量导入失败", e);
                 }
             },customExecutor);
-
             // 将异步任务添加到列表中
             futureList.add(future);
         }
         // 等待所有批量处理操作执行完毕才会继续向下执行
         CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0])).join();
-
-
         // 停止秒表并打印总耗时
         stopWatch.stop();
         System.out.println("asset总耗时:"+stopWatch.getTotalTimeMillis());
-
         //关闭线程池
         customExecutor.shutdown();
-    }
+    }*/
 
     @Override
     public AssetsDataVO getAssetsDataByCodeId(long deviceCodeId) {
@@ -202,8 +182,10 @@ public class AssetsServiceImpl extends ServiceImpl<AssetsMapper, Assets>
     }
 
     @Override
-    public List<ExcelData> selectAllData() {
-        return this.getBaseMapper().selectExcelData();
+    public List<ExcelData> selectAllData(int pageNum,int pageSize) {
+        int offSet = (pageNum - 1) * pageSize;
+
+        return this.getBaseMapper().selectExcelData(offSet, pageSize);
     }
 
 

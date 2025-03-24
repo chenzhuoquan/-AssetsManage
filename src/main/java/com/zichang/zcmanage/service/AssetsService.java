@@ -19,7 +19,7 @@ import java.util.List;
 public interface AssetsService extends IService<Assets> {
 
 
-    void saveBatchToAssets(List<Assets> cacheAssetsList);
+   // void saveBatchToAssets(List<Assets> cacheAssetsList);
 
 
     /**
@@ -39,6 +39,6 @@ public interface AssetsService extends IService<Assets> {
 
     QueryWrapper<Assets> getQueryWrapper(AssetsQueryRequest assetsQueryRequest);
 
-    List<ExcelData> selectAllData();
+    List<ExcelData> selectAllData(int pageNum,int pageSize);
 }
 

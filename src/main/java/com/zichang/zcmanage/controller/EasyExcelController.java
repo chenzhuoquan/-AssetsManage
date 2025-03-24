@@ -1,6 +1,11 @@
 package com.zichang.zcmanage.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.StopWatch;
+import cn.hutool.json.JSONUtil;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.zichang.zcmanage.common.ErrorCode;
 import com.zichang.zcmanage.constant.UserConstant;
 import com.zichang.zcmanage.exception.ThrowUtils;
@@ -18,7 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/excel")
@@ -67,16 +74,54 @@ public class EasyExcelController {
      * @throws IOException
      */
     @GetMapping("/export")
-    public void exportExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void exportExcel(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        // 权限校验
         User loginUser = userService.getLoginUser(request);
         if (!UserConstant.ADMIN_ROLE.equals(loginUser.getUserRole())) {
             throw new RuntimeException("无权限");
         }
-        //获取所有资产数据
-        List<ExcelData> excelDataList = assetsService.selectAllData();
+        // 设置响应头
         String fileName = "资产信息表";
-        //执行表格导出
-        easyExcelService.extracted(fileName, excelDataList, response);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        fileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+
+
+        // 分页参数
+        int pageSize = 1000;
+        int pageNum = 1;
+
+        try (ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream(), ExcelData.class).build()) {
+            WriteSheet writeSheet = EasyExcel.writerSheet(fileName).build();
+
+            while (true) {
+                // 分页查询
+                List<ExcelData> pageData = assetsService.selectAllData(pageNum, pageSize);
+                if (pageData.isEmpty()) {
+                    break;
+                }
+                // 写入当前页
+                excelWriter.write(pageData, writeSheet);
+                pageNum++;
+                // 手动清理内存
+                pageData.clear();
+            }
+        } catch (Exception e) {
+            response.reset();
+            response.setContentType("application/json");
+            response.setCharacterEncoding("utf-8");
+            Map<String, String> result = Map.of("error", "导出失败: " + e.getMessage());
+            response.getWriter().println(JSONUtil.toJsonStr(result));
+        }
+        stopWatch.stop();
+        System.out.println("导出接口总耗时: " + stopWatch.getTotalTimeMillis() + "ms");
     }
 
 

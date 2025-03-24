@@ -63,10 +63,15 @@
         formData.append('multipartFile', file);
 
         try {
-            const response = await fetch('http://localhost:8201/api/excel/read', {
+            const response = await fetch('http://8.219.160.85/api/excel/read', {
                 method: 'POST',
                 body: formData,
             });
+
+          /*  const response = await fetch('http://localhost:8201/api/excel/read', {
+                method: 'POST',
+                body: formData,
+            });*/
 
             if (response.ok) {
                 // 检查响应的内容类型

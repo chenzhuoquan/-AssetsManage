@@ -1,3 +1,4 @@
+/*
 package com.zichang.zcmanage.config;
 
 import org.springframework.context.annotation.Bean;
@@ -15,4 +16,4 @@ public class AppConfig {
     public DataSourceTransactionManager transactionManager(DataSource dataSource) {
         return new DataSourceTransactionManager(dataSource);
     }
-}
+}*/

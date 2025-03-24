@@ -73,10 +73,7 @@
         FROM assets a
                  LEFT JOIN additional_info ai ON a.device_code = ai.device_code
                  LEFT JOIN financial_info fi ON a.device_code = fi.device_code
-        WHERE a.isDelete = 0
-          AND ai.isDelete = 0
-          AND fi.isDelete = 0
-
         order by a.device_code desc
+        Limit #{offSet},#{pageSize}
     </select>
 </mapper>
